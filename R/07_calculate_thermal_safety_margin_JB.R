@@ -5,6 +5,10 @@
 library(tidyverse)
 
 pop_data <- readRDS("data-processed/population-time-series-with-temps.rds")
+pop_data <- read_csv("data-processed/populations-with-temps_after-matching.csv")
+ts_data <- read_csv("data-processed/population-ts/gpdd_acclitherm-spp.csv")
+
+
 
 pops_raw <- bind_rows(pop_data)
 
