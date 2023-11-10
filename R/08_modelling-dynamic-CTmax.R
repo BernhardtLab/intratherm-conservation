@@ -1,6 +1,8 @@
 ## predicted CTmax and population dynamics analysis 
 library(tidyverse)
 library(broom)
+library(cowplot)
+theme_set(theme_cowplot())
 
 ## read in R object of population and temperature time series dataframes:
 pops <- readRDS("data-processed/population-time-series-with-temps.rds")
@@ -84,6 +86,34 @@ predictions = predictions %>%
 
 ## save: 
 saveRDS(predictions, "data-processed/population-time-series-with-temps_thermal-data.rds")
+
+predictions <- readRDS("data-processed/population-time-series-with-temps_thermal-data.rds")
+
+predictions %>% 
+  filter(population_id == "Abramis brama_44.9_11.99_22923") %>%
+  ggplot(aes(x = dynamicCTmax)) + geom_histogram()
+
+with_ab <- predictions %>% 
+  filter(!is.na(abundance))
+
+unique(with_ab$genus_species) ## 162 species
+
+
+predictions %>% 
+  filter(population_id == "Abramis brama_44.9_11.99_22923") %>%
+  ggplot(aes(x = temperature)) + geom_histogram()
+
+pred2 <- predictions %>% 
+  filter(population_id == "Abramis brama_44.9_11.99_22923")
+
+pred2 %>% 
+  mutate(mean_ctmax = mean(dynamicCTmax)) %>% 
+  select(acclim_temp, dynamicCTmax, staticCTmax, mean_ctmax) %>% 
+  gather(contains("CTmax"), key = "type", value = "ctmax") %>% 
+  ggplot(aes(x = ctmax, fill = type)) + geom_histogram() +
+  facet_wrap( ~ type)
+
+
 
 
 ##check out each population:
