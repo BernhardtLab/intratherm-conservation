@@ -12,8 +12,8 @@ ctmax_data <- subset(ctmax_data, ctmax_data$parameter_tmax_or_tmin == "tmax")
 dtb <- data_temp %>% 
 	mutate(genus_species = str_replace(population_id, "\\_.*", ""))
 
-unique(dtb$genus_species)
-unique(ctmax_data$genus_species)
+unique(dtb$genus_species) ### 137 species with abundance data
+unique(ctmax_data$genus_species) ### 216 species in intratherm
 
 dt2 <- data_temp %>% 
 	mutate(log_n = log(abundance))
@@ -40,6 +40,9 @@ long_series <- data_temp %>%
 	group_by(population_id) %>% 
 	mutate(time_interval = date - lag(date)) %>% 
 	mutate(time_interval_sd = sd(time_interval, na.rm = TRUE)) 
+
+View(long_series)
+length(unique(long_series$genus_species)) ## 53 species with long time series, sampled every year
 
 ctmax_max <- ctmax_data %>% 
 	group_by(genus_species) %>% 
@@ -137,6 +140,11 @@ risk1 <- data_temp %>%
 	filter(!is.na(thermal_risk)) 
 
 
+str(risk1)
+length(unique(risk1$genus_species))
+
+risk1 %>% 
+  ggplot(aes(x = date, y = abundance, color = genus_species)) + geom_point()
 
 	
 	plot1 <- risk1 %>% 
