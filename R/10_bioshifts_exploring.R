@@ -14,4 +14,9 @@ bioshifts <- read_csv("data-raw/bioshifts/Bioshifts/BioShifts.csv") %>%
 bioshifts %>% 
   filter(gradient == "Latitudinal") %>%
   ggplot(aes(x = shift_r)) + geom_histogram()
+
+### pulling in acclitherm data
+acclitherm <- read_csv("data-processed/acclitherm_after-matching.csv")
+acclitherm_or <- read_csv("data-processed/acclitherm.csv")
+
   
