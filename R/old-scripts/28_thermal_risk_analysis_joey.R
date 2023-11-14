@@ -286,7 +286,7 @@ plotc <- acip %>%
 	ggplot(aes(x = date, y = abundance, group = population_id)) + geom_point() + geom_line() +
 	scale_x_continuous(breaks = c(1985:1996)) + ylab("Population abundance")
 
-
+library(patchwork)
 mplot <- plota / plotb / plotc
 ggsave(plot = mplot, filename = "figures/within3.png", width = 8, height = 10)
 
