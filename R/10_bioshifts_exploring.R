@@ -19,4 +19,8 @@ bioshifts %>%
 acclitherm <- read_csv("data-processed/acclitherm_after-matching.csv")
 acclitherm_or <- read_csv("data-processed/acclitherm.csv")
 
+gpdd <- read_csv("data-processed/population-ts/gpdd_acclitherm-spp-with-temps.csv")
+
+str(gpdd)
+names(gpdd)
   
