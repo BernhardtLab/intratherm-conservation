@@ -3,7 +3,7 @@ library(tidyverse)
 library(cowplot)
 theme_set(theme_cowplot())
 data_temp <- read_csv("~/Documents/too-big-for-github/population-dynamics-with-temp-ts.csv")
-ctmax_data <- read_csv("data-processed/intratherm-with-elev.csv")
+ctmax_data <- read_csv("data-processed/old-data-processed/data-processed/intratherm-with-elev.csv")
 ctmax_data <- subset(ctmax_data, ctmax_data$parameter_tmax_or_tmin == "tmax")
 
 
