@@ -82,7 +82,13 @@ fv <- read_excel("data-raw/intratherm-extractions/Globtherm2_FV_Test.xlsx") %>%
   mutate_all(funs(as.character)) %>% 
   mutate(extractor = "FV")
 
-all_mult <- bind_rows(so, ab, fl, fv, intra)
+nm <- read_csv("data-extraction-files/acclitherm-extractions_template.csv") %>% 
+  clean_names() %>% 
+  mutate(genus_species = paste(genus, species, sep = "_")) %>% 
+  mutate_all(funs(as.character)) %>% 
+  mutate(extractor = "NM")
+
+all_mult <- bind_rows(so, ab, fl, fv, intra, nm)
 
 write_csv(all_mult, "data-processed/intermediate-data/team-intratherm-extracted.csv")
 
