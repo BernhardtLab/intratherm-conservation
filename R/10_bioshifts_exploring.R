@@ -23,4 +23,6 @@ gpdd <- read_csv("data-processed/population-ts/gpdd_acclitherm-spp-with-temps.cs
 
 str(gpdd)
 names(gpdd)
+
+ps <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps-and-acclim-temps.rds")
   
