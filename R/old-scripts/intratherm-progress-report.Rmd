@@ -1,0 +1,23 @@
+---
+title: "Intratherm data updates"
+output: 
+  html_document: 
+    keep_md: yes
+    toc: yes
+---
+
+4.1. Data extraction and statistical analyses to be completed no later than March 1, 2020.
+4.1.1. A copy of the data used to inform all analyses including:
+4.1.1.1. Population change data and /or IUCN vulnerability metrics for each species (by population where relevant).
+4.1.1.2. Exposure metrics.
+4.1.1.3. R code and outputs, including figures and explanations of outcome of statistical analyses.
+
+
+4.1.2. Documentation of the methods for the data extractions and statistical analyses to ensure reproducibility and transparency.
+
+
+```{r}
+intratherm <- read_csv("data-raw/intratherm-merged-nikkis-traits.csv") %>%
+	mutate(population_id = paste(genus_species, latitude, sep = "_"))
+```
+
