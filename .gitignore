@@ -29,7 +29,7 @@ vignettes/*.pdf
 .Renviron
 .DS_Store
 
-
+tmp
 populations-with-temps.csv
 population-time-series-with-temps.rds
 intratherm-freshwater-temp-data-daily_popdynam.csv
