@@ -25,4 +25,22 @@ str(gpdd)
 names(gpdd)
 
 ps <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps-and-acclim-temps.rds")
-  
+ps3 <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps_thermal-data.rds")
+
+ps2 <- bind_rows(ps)  
+names(ps3)
+head(ps3)
+
+
+ps_slice <- ps3 %>% 
+  head()
+
+ps2_slice <- ps2 %>% 
+  filter(!is.na(abundance)) 
+
+
+unique(ps2_slice$genus_species) 
+
+ps2_slice %>% 
+  filter(genus_species == "Paralichthys lethostigma") %>% 
+  ggplot(aes(x = date, y = abundance)) + geom_line()
