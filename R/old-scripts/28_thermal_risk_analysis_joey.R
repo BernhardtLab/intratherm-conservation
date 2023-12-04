@@ -34,7 +34,7 @@ dt3 <- dt2 %>%
 length(unique(dt3$population_id))
 
 long_series <- data_temp %>%  
-	filter(abundance > 0) %>% 
+	filter(abundance > 0) %>%
 	filter(population_id %in% c(dt3$population_id)) %>% ### this is pulling out the populations which have time series > 10 years
 	mutate(genus_species = str_replace(population_id, "\\_.*", "")) %>% 
 	group_by(population_id) %>% 
@@ -101,7 +101,7 @@ unique(risk2_time$within3)
 
 
 risk2_raw <- data_temp %>%  
-	mutate(genus_species = str_replace(population_id, "\\_.*", "")) %>% 
+	mutate(genus_species = str_replace(population_id, "\\_.*", "")) %>%
 	# filter(abundance > 0) %>% 
 	filter(population_id %in% c(dt3$population_id)) %>% 
 	left_join(., ctmax_max, by = "genus_species") %>% 

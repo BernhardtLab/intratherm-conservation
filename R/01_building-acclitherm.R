@@ -64,6 +64,8 @@ jb <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_JB.x
   mutate_all(funs(as.character)) %>% 
   mutate(extractor = "JB")
 
+names(jb) ### wondering why this file doesn't have acclimation temperature?? it looks like none of the intratherms do!
+
 fl <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_FL.xlsx") %>% 
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
@@ -527,3 +529,6 @@ acclitherm <- acclitherm %>%
 
 ## save final dataset
 write_csv(acclitherm, "data-processed/acclitherm.csv")
+
+
+acclitherm <- read_csv("data-processed/acclitherm.csv")
