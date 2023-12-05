@@ -140,6 +140,7 @@ write_csv(ol_lpi, "data-processed/population-ts/lpi_acclitherm-spp.csv")
 ## figure out which species in acclitherm are in BioTIME  ##
 ############################################################
 biotime <- read.csv("data-raw/biotime/BioTIMEQuery_24_06_2021.csv", stringsAsFactors = FALSE)
+biotime <- read.csv("~/Documents/too-big-for-github/BioTIMEQuery_24_06_2021.csv", stringsAsFactors = FALSE)
 
 colnames(biotime)
 

@@ -28,15 +28,14 @@ ps <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps-
 ps3 <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps_thermal-data.rds")
 
 ps2 <- bind_rows(ps)  
-names(ps3)
-head(ps3)
-
 
 ps_slice <- ps3 %>% 
-  head()
+  filter(!is.na(abundance))
 
 ps2_slice <- ps2 %>% 
   filter(!is.na(abundance)) 
+
+write_csv(ps2_slice, "data-processed/modelled-ctmax-temps.csv")
 
 
 unique(ps2_slice$genus_species) 

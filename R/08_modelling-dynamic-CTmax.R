@@ -32,6 +32,7 @@ while (pop <= length(pops)) {
 
 saveRDS(pops, "data-processed/population-time-series-with-temps-and-acclim-temps.rds")
 
+pops <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps-and-acclim-temps.rds")
 
 ## read in acclitherm data
 acclitherm <- read_csv("data-processed/acclitherm_after-matching.csv") %>%
@@ -50,18 +51,41 @@ acclitherm <-  acclitherm %>%
 ## do this by calculating population-level ARRs, grouping by species, and averaging slope and intercept
 arr_fits <- acclitherm %>% 
   group_by(population_id) %>% 
-  filter(length(unique(acclim_temp)) > 1) %>%
-  do(tidy(lm(parameter_value~acclim_temp, data=.))) %>%
+  filter(length(unique(acclim_temp)) > 1) %>%  ### filters to give us the populations where we have more than one acclimation temperature
+  do(tidy(lm(parameter_value~acclim_temp, data=.))) %>% 
   mutate(genus_species = str_split_fixed(population_id, "\\_", 2)[,1]) %>% 
-  select(-c("p.value", "std.error", "statistic")) %>%
-  spread(key = term, value = estimate) %>%
+  select(-c("p.value", "std.error", "statistic")) %>% 
+  spread(key = term, value = estimate) %>% 
   dplyr::rename("intercept" = `(Intercept)`, "ARR_slope" = acclim_temp) %>%
-  group_by(genus_species) %>%
+  dplyr::group_by(genus_species) %>% 
   mutate(mean_ARR_slope = mean(ARR_slope),
          mean_intercept = mean(intercept)) %>%
-  select(genus_species, mean_ARR_slope, mean_intercept) %>%
+  select(genus_species, mean_ARR_slope, mean_intercept) %>%  
   unique()
 
+
+library(dplyr)
+thing <- acclitherm %>% 
+  group_by(population_id) %>% 
+  filter(length(unique(acclim_temp)) > 1) %>%  ### filters to give us the populations where we have more than one acclimation temperature
+  do(tidy(lm(parameter_value~acclim_temp, data=.))) %>% 
+  mutate(genus_species = str_split_fixed(population_id, "\\_", 2)[,1]) %>% 
+  select(-c("p.value", "std.error", "statistic")) %>% 
+  spread(key = term, value = estimate) %>% 
+  dplyr::rename("intercept" = `(Intercept)`, "ARR_slope" = acclim_temp) %>% 
+  mutate(genus_species = as.factor(genus_species)) %>% 
+  dplyr::group_by((genus_species)) %>% 
+  mutate(mean_ARR_slope = mean(ARR_slope)) %>% 
+         mean_intercept = mean(intercept)) %>%
+  select(genus_species, mean_ARR_slope, mean_intercept) %>%  
+  unique()
+
+str(thing)
+
+View(arr_fits)
+
+
+pops2 <- bind_rows(pops)
 ## bind population dataframes together 
 pops <- bind_rows(pops) %>%
   mutate(genus_species = str_split_fixed(population_id, pattern = "_", n = 3)[,1]) %>%
