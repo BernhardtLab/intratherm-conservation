@@ -92,7 +92,7 @@ write_csv(ol_gpdd, "data-processed/population-ts/gpdd_acclitherm-spp.csv")
 ## figure out which species in acclitherm are in LPI  ##
 ########################################################
 library(devtools)
-#install_github("Zoological-Society-of-London/rlpi", dependencies=TRUE)
+# install_github("Zoological-Society-of-London/rlpi", dependencies=TRUE)
 library(rlpi)
 
 lpi <- read_csv("data-raw/lpi/Public data set/LPR2020data_public.csv") %>% 
