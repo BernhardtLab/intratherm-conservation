@@ -50,21 +50,29 @@ intra <- read_csv("data-raw/intratherm-extractions/Globtherm2_within_species_201
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "group")
+  mutate(extractor = "group") %>% 
+  rename(latitude = lat_of_collection) %>% 
+  rename(longitude = long_of_collection)
 
 so <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_SO.xlsx") %>% 
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "SO")
+  mutate(extractor = "SO") %>% 
+  rename(latitude = lat_of_collection) %>% 
+  rename(longitude = long_of_collection)
 
 jb <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_JB.xlsx") %>% 
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "JB")
+  mutate(extractor = "JB") %>% 
+  rename(latitude = lat_of_collection) %>% 
+  rename(longitude = long_of_collection)
 
 names(jb) ### wondering why this file doesn't have acclimation temperature?? it looks like none of the intratherms do!
+### ok update December 17 2023 -- this is because it was called pretreatment_temp, so it's there, phew!
+
 
 fl <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_FL.xlsx") %>% 
   clean_names() %>% 
@@ -88,23 +96,46 @@ nm <- read_csv("data-extraction-files/acclitherm-extractions_template.csv") %>%
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "NM")
+  mutate(extractor = "NM") %>% 
+  rename(pretreatment_temp = acclim_temp)
+
+
+length(unique(nm$genus_species)) ### 44 new species from Nikki's extractions
+
 
 all_mult <- bind_rows(so, ab, fl, fv, intra, nm)
 
 write_csv(all_mult, "data-processed/intermediate-data/team-intratherm-extracted.csv")
 
 ## clean the data 
+
+all_mult <- read_csv("data-processed/intermediate-data/team-intratherm-extracted.csv")
+names(all_mult)
+
+all_mult %>% 
+  filter(!is.na(acclim_temp) & !is.na(pretreatment_temp)) %>% View
+
+all_mult %>% 
+  filter(!is.na(acclim_temp)) %>% dim
+
+all_mult %>% 
+  filter(!is.na(pretreatment_temp)) %>% dim
+
+View(all_mult)
+
 all_mult2 <- all_mult %>% 
+  select(-latitude) %>% 
+  select(-longitude) %>% 
   mutate(parameter_value = str_replace(parameter_value, "<", "")) %>% 
   mutate(parameter_value = as.numeric(parameter_value)) %>% 
   mutate(error_estimate = as.numeric(error_estimate)) %>% 
   mutate(lat_of_collection = as.numeric(lat_of_collection)) %>% 
-  mutate(original_compilation = "intratherm_team") %>% 
+  mutate(original_compilation = "intratherm_team") %>%
   rename(latitude = lat_of_collection,
-         longitude = long_of_collection) %>% 
+         longitude = long_of_collection) %>%
   mutate(latitude = as.numeric(latitude),
          longitude = as.numeric(longitude)) %>% 
+  # mutate(acclim_temp = ifelse(is.na(pretreatment_temp), pretreatment_temp, acclim_temp)) %>% 
   rename(acclim_temp = pretreatment_temp) %>% 
   rename(acclim_time = pretreatment_duration) %>% 
   mutate(acclim_temp = as.numeric(acclim_temp)) %>% 
