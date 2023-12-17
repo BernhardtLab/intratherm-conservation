@@ -98,7 +98,11 @@ library(devtools)
 # install_github("Zoological-Society-of-London/rlpi", dependencies=TRUE)
 library(rlpi)
 
-lpi <- read_csv("data-raw/lpi/Public data set/LPR2020data_public.csv") %>% 
+
+# lpi <- read_csv("data-raw/lpi/Public data set/LPR2020data_public.csv") %>% 
+#   mutate(genus_species = str_replace(Binomial, "_", " "))
+
+lpi <- read_csv("~/Documents/too-big-for-github/LPD2022_public/LPD2022_public.csv") %>% 
   mutate(genus_species = str_replace(Binomial, "_", " "))
 
 ## look for acclitherm species, checking for synonyms
@@ -121,11 +125,11 @@ overlap_lpi <- lpi %>%
                                 genus_species_new)) %>%
   select(-genus_species_new)
 
-overlap_lpi <- overlap_lpi[,-c(100:112)]
+# overlap_lpi <- overlap_lpi[,-c(100:112)]
 
 ## how many species and populations?
-length(unique(overlap_lpi$genus_species)) # 176 species
-length(unique(overlap_lpi$ID)) ## 1290 populations
+length(unique(overlap_lpi$genus_species)) # 176 species; update 189 species
+length(unique(overlap_lpi$ID)) ## 1290 populations, update 1774 populations
 
 ## reformat data to match gpdd
 ol_lpi <- overlap_lpi %>% 
@@ -134,6 +138,8 @@ ol_lpi <- overlap_lpi %>%
   mutate(abundance = ifelse(abundance == "NULL", NA, abundance)) %>% 
   mutate(abundance = as.numeric(abundance)) %>% 
   mutate(year = as.numeric(year))
+
+
 
 ## add pop ts identifier (database_rowID)
 ol_lpi$popts_id <- paste("LPI", 1:nrow(ol_lpi), sep = "_")
