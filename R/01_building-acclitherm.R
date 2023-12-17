@@ -297,7 +297,7 @@ acclitherm_species <- acclitherm %>%
 ## get Class of each species
 classes <- data.frame()
 for(species in unique(acclitherm$genus_species)) {
-  #classes <- rbind(classes, tax_name(sci = species, get = "class", db = "ncbi"))
+  classes <- rbind(classes, tax_name(sci = species, get = "class", db = "ncbi")) ## this step takes a while
 }
 write_csv(classes, "data-processed/intermediate-data/acclitherm-classes.csv")
 classes <- read_csv("data-processed/intermediate-data/acclitherm-classes.csv")
@@ -311,13 +311,13 @@ notna <- read_csv("data-processed/intermediate-data/acclitherm-classes.csv") %>%
 
 na_classes <- data.frame()
 for(species in unique(isna$query)) {
-  #na_classes <- rbind(na_classes, tax_name(sci = species, get = "class", db = "itis"))
+  na_classes <- rbind(na_classes, tax_name(sci = species, get = "class", db = "itis"))
 }
-#write_csv(na_classes, "data-processed/intermediate-data/acclitherm-na-classes.csv")
+write_csv(na_classes, "data-processed/intermediate-data/acclitherm-na-classes.csv")
 na_classes <- read_csv("data-processed/intermediate-data/acclitherm-na-classes.csv")
 
 classes <- rbind(na_classes, notna)
-#write_csv(classes, "data-processed/intermediate-data/acclitherm-classes.csv")
+write_csv(classes, "data-processed/intermediate-data/acclitherm-classes.csv")
 
 ## fill in missing classes manually 
 missing <- classes[which(is.na(classes$class)),]
@@ -344,6 +344,7 @@ classes <- classes %>%
   filter(!is.na(class)) %>%
   rbind(., missing)
 
+
 write_csv(classes, "data-processed/intermediate-data/acclitherm-classes-checked.csv")
 
 acclitherm_classes <- read_csv("data-processed/intermediate-data/acclitherm-classes-checked.csv") %>% 
@@ -351,12 +352,15 @@ acclitherm_classes <- read_csv("data-processed/intermediate-data/acclitherm-clas
   distinct(query, class) %>% 
   rename(genus_species = query)
 
-acclitherm <- select(acclitherm, -class) %>%
-  left_join(., acclitherm_classes)
-  
-write_csv(acclitherm, "data-processed/intermediate-data/acclitherm_Rohr-Comte-Intra.csv")
+acclitherm2 <- select(acclitherm, -class) %>% 
+  left_join(., acclitherm_classes) 
 
-acclitherm %>% 
+
+
+  
+write_csv(acclitherm2, "data-processed/intermediate-data/acclitherm_Rohr-Comte-Intra.csv")
+
+acclitherm2 %>% 
   ggplot(aes(x = latitude, y = parameter_value, color = realm_general)) + geom_point() +
   ylab("Thermal limit (°C)") + xlab("Latitude") + facet_grid(realm_general ~ parameter_tmax_or_tmin)
 
@@ -370,7 +374,7 @@ ggsave("figures/all_limits.png", width = 49, height = 30, limitsize = FALSE)
 
 ## clean up combined dataset -----------------------------------------------
 ## fix taxonomy columns and remove unnecessary columns leftover from Rohr and Comte 
-acclitherm <- acclitherm %>%
+acclitherm3 <- acclitherm2 %>%
   mutate(family = ifelse(is.na(family), family1, family)) %>%
   mutate(elevation_of_collection = ifelse(is.na(elevation_of_collection), elevation, 
                                           elevation_of_collection)) %>%
@@ -384,10 +388,10 @@ acclitherm <- acclitherm %>%
          -realm_general, -realm_general3) %>%
   rename("citation_Rohr" = citation, "reference_Comte" = reference, "realm_general" = realm_general2) 
 
-acclitherm = acclitherm[,(c(1, 6:7, 4:5, 2, 8, 3, 9:22, 24, 25,36, 26,27, 35, 28, 32, 31, 29, 30, 23, 33:34))]
-colnames(acclitherm)
+acclitherm3 = acclitherm3[,(c(1, 6:7, 4:5, 2, 8, 3, 9:22, 24, 25,36, 26,27, 35, 28, 32, 31, 29, 30, 23, 33:34))]
+colnames(acclitherm3)
 
-acclitherm = acclitherm %>%
+acclitherm4 = acclitherm3 %>%
   group_by(genus_species) %>%
   fill(phylum, .direction = "downup") %>%
   fill(order, .direction = "downup") %>%
@@ -396,11 +400,11 @@ acclitherm = acclitherm %>%
 
 ## taxize and change names to accepted names 
 ## use taxize to get a list of species synonyms and the most taxonomically correct names:
-acc_species <- unique(acclitherm$genus_species)
+acc_species <- unique(acclitherm4$genus_species)
 taxa_tt <- data.frame(binomial = acc_species)
 
 tsn_search_tt <- get_tsn(as.character(taxa_tt$binomial), accepted = FALSE)
-saveRDS(tsn_search_tt, "data-processed/intermediate-data/tsn_search_acclitherm.rds")
+saveRDS(tsn_search_tt, "data-processed/intermediate-data/tsn_search_acclitherm.rds") ## start here
 tsns_tt <- data.frame(readRDS("data-processed/intermediate-data/tsn_search_acclitherm.rds"))
 tsns_tt$binomial <- taxa_tt$binomial
 
@@ -408,8 +412,8 @@ found <- tsns_tt %>%
   subset(match == "found")  ## get only found found spp
 
 ## get synonyms
-#syns <- synonyms(tsn_search_tt)
-#saveRDS(syns, "data-processed/intermediate-data/syns_acclitherm.rds")
+syns <- synonyms(tsn_search_tt)
+saveRDS(syns, "data-processed/intermediate-data/syns_acclitherm.rds") ### redo this
 syns <- readRDS("data-processed/intermediate-data/syns_acclitherm.rds")
 
 syns_df <- ldply(syns, data.frame) %>%
@@ -442,7 +446,7 @@ write.csv(names, "data-processed/acclitherm_taxize-key.csv", row.names = FALSE)
 write.csv(syns_df, "data-processed/acclitherm_synonyms-key.csv", row.names = FALSE)
 
 ## correct names:
-acclitherm <- acclitherm %>%
+acclitherm5 <- acclitherm4 %>%
   ungroup() %>%
   left_join(., names, by = c("genus_species" = "binomial")) %>%
   select(-genus_species) %>%
@@ -456,7 +460,7 @@ acclitherm <- acclitherm %>%
                                 population_id)) 
 
 ## make some figures
-acclitherm %>% 
+acclitherm5 %>% 
   # filter(parameter_tmax_or_tmin == "tmax") %>% 
   group_by(population_id) %>% 
   ggplot(aes(x = acclim_temp, y = parameter_value, color = latitude)) + geom_point() +
@@ -466,7 +470,7 @@ acclitherm %>%
 
 ggsave("figures/ARR-all.png", width = 10, height = 8)
 
-acclitherm %>%
+acclitherm5 %>%
   filter(parameter_tmax_or_tmin == "tmax") %>% 
   filter(!is.na(acclim_temp)) %>% 
   mutate(lat2 = round(abs(latitude), digits = 0)) %>% 
@@ -478,7 +482,7 @@ acclitherm %>%
 
 ggsave("figures/ARR-latitude.png", width = 6, height = 4)
 
-acclitherm %>% 
+acclitherm5 %>% 
   filter(!is.na(acclim_temp)) %>%
   filter(parameter_tmax_or_tmin == "tmax") %>% 
   ggplot(aes(x = latitude, y = parameter_value, color = acclim_temp)) + geom_point() +
@@ -488,26 +492,27 @@ acclitherm %>%
 
 ggsave("figures/CTmax-latitude.png", width = 10, height = 4)
 
+write_csv(acclitherm5, "data-processed/acclimatherm5.csv")
 
 ## get rid of CTmin, calculate ARRs -----------------------------------------------
 ## populations with at least 2 CTmax estimates: 631
-pops <- acclitherm %>%
+pops <- acclitherm5 %>%
   distinct(population_id, genus_species, acclim_temp) %>%
   group_by(population_id) %>%
   tally() %>%
   filter(n > 1) %>%
   select(-n) %>%
-  left_join(., acclitherm)
+  left_join(., acclitherm5)
 
 ## species with at least 2 CTmax estimates of the same type: 45
-specs <- acclitherm %>%
+specs <- acclitherm5 %>%
   filter(!genus_species %in% pops$genus_species) %>%
   distinct(population_id, genus_species, acclim_temp) %>%
   group_by(genus_species) %>%
   tally() %>%
   filter(n > 1) %>%
   select(-n) %>%
-  left_join(., acclitherm)
+  left_join(., acclitherm5)
 
 ## plot specs ones:
 specs %>% 
@@ -520,14 +525,14 @@ specs %>%
 
 
 ## ARR calculation:
-acclitherm_pops <- acclitherm %>%
+acclitherm_pops <- acclitherm5 %>%
   filter(!is.na(acclim_temp)) %>%
   distinct(population_id, genus_species, acclim_temp) %>%
   group_by(population_id) %>%
   tally()  %>%
   filter(n > 1) %>%
   select(-n) %>%
-  left_join(., acclitherm)
+  left_join(., acclitherm5)
 
 acclitherm_pops %>%
   filter(parameter_tmax_or_tmin == "tmax") %>%
@@ -544,11 +549,14 @@ acclitherm_species <- select(acclitherm_pops, genus_species, genus, species,
                              phylum, order, family, class) %>%
   unique()
 
+
+length(unique(acclitherm5$genus_species))
+
 write_csv(acclitherm_species, "data-processed/acclitherm_species-list.csv")
 
 
 ## clean realm column 
-acclitherm <- acclitherm %>%
+acclitherm6 <- acclitherm5 %>%
   filter(realm_general == "Aquatic") %>%
   mutate(realm_general = ifelse(realm_specific %in% c("marine", "estuarine"),
                                 "Marine",
@@ -557,19 +565,19 @@ acclitherm <- acclitherm %>%
                                        ifelse(class == "Amphibia",
                                               "Terrestrial",
                                               "Aqautic")))) %>%
-  rbind(., filter(acclitherm, realm_general != "Aquatic")) %>%
+  rbind(., filter(acclitherm5, realm_general != "Aquatic")) %>%
   mutate(realm_general = ifelse(realm_general == "Aquatic & terrestrial",
                                 "Terrestrial",
                                 realm_general))
 
 ## make sure all amphibias are terrestrial 
-acclitherm <- acclitherm %>%
+acclitherm7 <- acclitherm6 %>%
   filter(class == "Amphibia") %>%
   mutate(realm_general = "Terrestrial") %>%
-  rbind(., filter(acclitherm, class != "Amphibia"))
+  rbind(., filter(acclitherm6, class != "Amphibia"))
 
 ## save final dataset
-write_csv(acclitherm, "data-processed/acclitherm.csv")
+write_csv(acclitherm7, "data-processed/acclitherm.csv")
 
 
 acclitherm <- read_csv("data-processed/acclitherm.csv")
