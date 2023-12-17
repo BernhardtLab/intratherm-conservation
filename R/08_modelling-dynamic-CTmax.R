@@ -6,6 +6,7 @@ theme_set(theme_cowplot())
 
 ## read in R object of population and temperature time series dataframes:
 pops <- readRDS("data-processed/population-time-series-with-temps.rds")
+pops <- readRDS("~/Documents/too-big-for-github/population-time-series-with-temps.rds")
 
 ## create acclimation temperature column for each population that is mean temperature over the 7 days before 
 pop = 1 
@@ -112,6 +113,11 @@ predictions = predictions %>%
 saveRDS(predictions, "data-processed/population-time-series-with-temps_thermal-data.rds")
 
 predictions <- readRDS("data-processed/population-time-series-with-temps_thermal-data.rds")
+
+predictions %>% 
+  head() %>% 
+  View
+
 
 predictions %>% 
   filter(population_id == "Abramis brama_44.9_11.99_22923") %>%

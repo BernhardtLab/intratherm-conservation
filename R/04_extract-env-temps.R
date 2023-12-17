@@ -83,6 +83,7 @@ unique_locs <- all_locs %>%
   unique()
 
 filename <- paste("data-raw/temperature-data/Complete_TAVG_Daily_LatLong1_1930.nc", sep = "")
+filename <- paste("~/Documents/too-big-for-github/Complete_TAVG_LatLong1.nc", sep = "")
 ncfile <- nc_open(filename)
 
 lat <- ncvar_get(ncfile, "latitude")
