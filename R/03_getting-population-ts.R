@@ -151,11 +151,13 @@ write_csv(ol_lpi, "data-processed/population-ts/lpi_acclitherm-spp.csv")
 biotime <- read.csv("data-raw/biotime/BioTIMEQuery_24_06_2021.csv", stringsAsFactors = FALSE)
 biotime <- read.csv("~/Documents/too-big-for-github/BioTIMEQuery_24_06_2021.csv", stringsAsFactors = FALSE)
 
+
+
 colnames(biotime)
 
 ## search list of TaxonNames for list of synonyms for our species
 names <- biotime$GENUS_SPECIES
-syns[which(syns %in% names)] # 178 overlapping species 
+syns[which(syns %in% names)] # 178 overlapping species, 205 update 
 
 ## subset to overlapping data 
 overlap <- intersect(names, syns)
