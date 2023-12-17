@@ -242,6 +242,7 @@ while(i < length(studyIDs) + 1) {
   i = i + 1
 }
 
+### start again here
 new_ol <- new_ol %>%
   mutate(population_id = paste(GENUS_SPECIES, LATITUDE, LONGITUDE, STUDY_ID, sep = "_")) ## add pop id
 
