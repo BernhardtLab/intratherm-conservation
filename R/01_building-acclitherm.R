@@ -439,6 +439,16 @@ names <- syns_df %>%
   select(binomial, acc_name) %>%
   filter(!duplicated(.))
 
+length(unique(names$acc_name))
+
+  
+tallies <- names %>% 
+  group_by(acc_name) %>% 
+  tally() 
+
+# tallies %>% 
+#   filter(n == 2) ## looks like we lost 17 species here due to synonyms
+
 ## save a key to reference correct names later:
 write.csv(names, "data-processed/acclitherm_taxize-key.csv", row.names = FALSE)
 
@@ -458,6 +468,10 @@ acclitherm5 <- acclitherm4 %>%
   mutate(population_id = ifelse(is.na(latitude) & is.na(longitude),
                                 paste(genus_species, ref, sep = "_"),
                                 population_id)) 
+
+length(unique(names$acc_name))
+length(unique(acclitherm5$genus_species)) 
+length(unique(acclitherm4$genus_species)) ## ok so between acclitherm4 and 4 we go from 479 species to 462
 
 ## make some figures
 acclitherm5 %>% 
@@ -551,6 +565,7 @@ acclitherm_species <- select(acclitherm_pops, genus_species, genus, species,
 
 
 length(unique(acclitherm5$genus_species))
+length(unique(acclitherm_species$genus_species))
 
 write_csv(acclitherm_species, "data-processed/acclitherm_species-list.csv")
 
@@ -581,3 +596,15 @@ write_csv(acclitherm7, "data-processed/acclitherm.csv")
 
 
 acclitherm <- read_csv("data-processed/acclitherm.csv")
+acclitherm_b4 <- read_csv("data-processed/intermediate-data/acclitherm-multi-acclim.csv")
+
+
+length(unique(acclitherm$genus_species)) ## 462 species, so we've lost some since the 479 above
+length(unique(acclitherm_b4$genus_species))
+
+
+lost_species <- setdiff(unique(acclitherm_b4$genus_species), unique(acclitherm$genus_species)) ### we've lost 38 species, why? strange that there are 38 different, but only 17 diff in length
+
+
+acclitherm_b4 %>% 
+  filter(genus_species %in% c(lost_species)) %>% View
