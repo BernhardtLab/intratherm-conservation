@@ -8,6 +8,8 @@ library(readr)
 
 acclitherm <- read_csv("data-processed/acclitherm.csv")
 
+length(unique(acclitherm$genus_species))
+
 ########################################################
 ## figure out which species in acclitherm are in GPDD ##
 ########################################################
@@ -15,7 +17,8 @@ path = "data-raw/gpdd/urn_uuid_bced9df4_1398_4768_a0f3_6d5007446ad4/data/"
 
 taxa <- read_csv(paste(path, "df35b.236.1-DATA.csv", sep = ""))
 main <- read_csv(paste(path, "df35b.234.1-DATA.csv", sep = ""))
-gdata <- read_csv(paste(path, "df35b.233.1-DATA.csv", sep = ""))
+gdata <- read_csv(paste(path, "df35b.233.1-DATA.csv", sep = "")) ### this isn't here
+gdata <- read_csv("~/Documents/too-big-for-github/df35b.233.1.csv") ### i think this is the right file
 location <- read_csv(paste(path, "df35b.239.1-DATA.csv", sep = ""))
 names(main)
 

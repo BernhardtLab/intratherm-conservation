@@ -604,7 +604,7 @@ length(unique(acclitherm_b4$genus_species))
 
 
 lost_species <- setdiff(unique(acclitherm_b4$genus_species), unique(acclitherm$genus_species)) ### we've lost 38 species, why? strange that there are 38 different, but only 17 diff in length
-
+## can come back later, but for now will proceed.
 
 acclitherm_b4 %>% 
   filter(genus_species %in% c(lost_species)) %>% View
