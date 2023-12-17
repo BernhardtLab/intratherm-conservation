@@ -78,32 +78,44 @@ fl <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_FL.x
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "FL")
+  mutate(extractor = "FL") %>% 
+  rename(latitude = lat_of_collection) %>% 
+  rename(longitude = long_of_collection)
 
 ab <- read_excel("data-raw/intratherm-extractions/Globtherm2_within_species_AB.xlsx") %>% 
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "AB")
+  mutate(extractor = "AB") %>% 
+  rename(latitude = lat_of_collection) %>% 
+  rename(longitude = long_of_collection)
 
 fv <- read_excel("data-raw/intratherm-extractions/Globtherm2_FV_Test.xlsx") %>% 
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
-  mutate(extractor = "FV")
+  mutate(extractor = "FV") %>% 
+  rename(latitude = lat_of_collection) %>% 
+  rename(longitude = long_of_collection)
 
 nm <- read_csv("data-extraction-files/acclitherm-extractions_template.csv") %>% 
   clean_names() %>% 
   mutate(genus_species = paste(genus, species, sep = "_")) %>% 
   mutate_all(funs(as.character)) %>% 
   mutate(extractor = "NM") %>% 
-  rename(pretreatment_temp = acclim_temp)
+  rename(pretreatment_temp = acclim_temp) %>% 
+  rename(pretreatment_duration = acclim_time)
 
 
-length(unique(nm$genus_species)) ### 44 new species from Nikki's extractions
+# length(unique(nm$genus_species)) ### 44 new species from Nikki's extractions
 
 
-all_mult <- bind_rows(so, ab, fl, fv, intra, nm)
+all_mult <- bind_rows(so, ab, fl, fv, intra, nm) %>% 
+  rename(acclim_temp =  pretreatment_temp) %>% 
+  rename(acclim_time =  pretreatment_duration)
+
+all_mult %>% 
+  filter(is.na(acclim_temp)) %>% View
 
 write_csv(all_mult, "data-processed/intermediate-data/team-intratherm-extracted.csv")
 
@@ -124,20 +136,18 @@ all_mult %>%
 View(all_mult)
 
 all_mult2 <- all_mult %>% 
-  select(-latitude) %>% 
-  select(-longitude) %>% 
   mutate(parameter_value = str_replace(parameter_value, "<", "")) %>% 
   mutate(parameter_value = as.numeric(parameter_value)) %>% 
   mutate(error_estimate = as.numeric(error_estimate)) %>% 
-  mutate(lat_of_collection = as.numeric(lat_of_collection)) %>% 
+  # mutate(lat_of_collection = as.numeric(lat_of_collection)) %>% 
   mutate(original_compilation = "intratherm_team") %>%
-  rename(latitude = lat_of_collection,
-         longitude = long_of_collection) %>%
+  # rename(latitude = lat_of_collection,
+  #        longitude = long_of_collection) %>%
   mutate(latitude = as.numeric(latitude),
          longitude = as.numeric(longitude)) %>% 
   # mutate(acclim_temp = ifelse(is.na(pretreatment_temp), pretreatment_temp, acclim_temp)) %>% 
-  rename(acclim_temp = pretreatment_temp) %>% 
-  rename(acclim_time = pretreatment_duration) %>% 
+  # rename(acclim_temp = pretreatment_temp) %>% 
+  # rename(acclim_time = pretreatment_duration) %>% 
   mutate(acclim_temp = as.numeric(acclim_temp)) %>% 
   mutate(ramping_rate = as.numeric(ramping_rate)) %>% 
   mutate(n_cat = NA) %>% 
@@ -278,7 +288,7 @@ acclitherm <- comb_tmax2 %>%
 write_csv(acclitherm, "data-processed/intermediate-data/acclitherm-multi-acclim.csv")
 acclitherm <- read_csv("data-processed/intermediate-data/acclitherm-multi-acclim.csv")
 
-unique(acclitherm$genus_species) ## 450 species with at least 1 population & multiple acclimation temps
+unique(acclitherm$genus_species) ## 479 species with at least 1 population & multiple acclimation temps
 
 acclitherm_species <- acclitherm %>% 
   distinct(genus_species, .keep_all = TRUE) %>% 
@@ -289,7 +299,7 @@ classes <- data.frame()
 for(species in unique(acclitherm$genus_species)) {
   #classes <- rbind(classes, tax_name(sci = species, get = "class", db = "ncbi"))
 }
-#write_csv(classes, "data-processed/intermediate-data/acclitherm-classes.csv")
+write_csv(classes, "data-processed/intermediate-data/acclitherm-classes.csv")
 classes <- read_csv("data-processed/intermediate-data/acclitherm-classes.csv")
 
 ## check other database
@@ -389,8 +399,8 @@ acclitherm = acclitherm %>%
 acc_species <- unique(acclitherm$genus_species)
 taxa_tt <- data.frame(binomial = acc_species)
 
-#tsn_search_tt <- get_tsn(as.character(taxa_tt$binomial), accepted = FALSE)
-#saveRDS(tsn_search_tt, "data-processed/intermediate-data/tsn_search_acclitherm.rds")
+tsn_search_tt <- get_tsn(as.character(taxa_tt$binomial), accepted = FALSE)
+saveRDS(tsn_search_tt, "data-processed/intermediate-data/tsn_search_acclitherm.rds")
 tsns_tt <- data.frame(readRDS("data-processed/intermediate-data/tsn_search_acclitherm.rds"))
 tsns_tt$binomial <- taxa_tt$binomial
 
