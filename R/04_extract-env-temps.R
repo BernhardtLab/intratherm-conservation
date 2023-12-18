@@ -62,7 +62,7 @@ no_match <- realms %>%
   unique() %>%
   left_join(., realms) %>% unique()
 ## 435 don't match - mean population was sampled from different realm than acclimation response ratio/thermal limit
-## flag for now and decide what to do later 
+## flag for now and decide what to do later (update 555 don't match)
 all_locs$sampled_in_other_realm <- ifelse(all_locs$population_id %in% no_match$population_id,
                                           "Yes",
                                           "No")
@@ -73,6 +73,7 @@ all_locs$temp_id <- paste(all_locs$latitude, all_locs$longitude, sep = "_")
 #########################################################
 ##      GETTING ELEVATION FOR POPDYNAM POPULATIONS     ##
 #########################################################
+library(ncdf4)
 latitude_of_raster <- c() 
 longitude_of_raster <- c()
 ## "raster_of_latitude" and "raster_of_longitude" represent the centre coordinates of 1 degree lat x 1 degree long grid cells 
@@ -83,7 +84,8 @@ unique_locs <- all_locs %>%
   unique()
 
 filename <- paste("data-raw/temperature-data/Complete_TAVG_Daily_LatLong1_1930.nc", sep = "")
-filename <- paste("~/Documents/too-big-for-github/Complete_TAVG_LatLong1.nc", sep = "")
+filename <- paste("~/Documents/too-big-for-github/Complete_TAVG_Daily_LatLong1_1930.nc", sep = "")
+
 ncfile <- nc_open(filename)
 
 lat <- ncvar_get(ncfile, "latitude")
@@ -213,9 +215,9 @@ while (i < nrow(unique_locs)+1) {
   i <- i + 1
 }
 
-unique_locs$raster_mean = unlist(raster_means, use.names=FALSE)
-#saveRDS(unique_locs, "data-processed/elevation_popdynam.rds")
-unique_pairs <- readRDS("data-processed/elevation_popdynam.rds")
+unique_locs$raster_mean = unlist(raster_means, use.names=FALSE) ## come back here
+saveRDS(unique_locs, "data-processed/elevation_popdynam.rds")
+unique_pairs <- readRDS("data-processed/elevation_popdynam.rds") ## come back here
 
 
 ########################################
@@ -256,7 +258,8 @@ while (unique_loc < nrow(unique_pairs) + 1) {
     print(paste("On population number ", unique_loc, ", getting temp data from ", rep, sep = ""))
     
     ## read in gridded data in nc file for the file_index from berkeley earth and store data in R workspace 
-    filename <- paste("data-raw/temperature-data/Complete_TAVG_Daily_LatLong1_", rep, ".nc", sep = "")
+    # filename <- paste("data-raw/temperature-data/Complete_TAVG_Daily_LatLong1_", rep, ".nc", sep = "")
+    filename <- paste("~/Documents/too-big-for-github/temperature-data/Complete_TAVG_Daily_LatLong1_", rep, ".nc", sep = "")
     ncfile <- nc_open(filename)
     
     ## create variables for things needed to use data
@@ -363,7 +366,7 @@ while (unique_loc < nrow(unique_pairs) + 1) {
 
 
 terrestrial_temps <- temperature_data[-1,]
-#saveRDS(terrestrial_temps, "data-processed/temperature-data/terrestrial_tavg.rds")
+saveRDS(terrestrial_temps, "data-processed/temperature-data/terrestrial_tavg.rds")
 terrestrial_temps <- readRDS("data-processed/temperature-data/terrestrial_tavg.rds")
 
 ## adjust for elevation
