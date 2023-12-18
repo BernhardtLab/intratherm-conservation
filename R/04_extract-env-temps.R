@@ -366,7 +366,7 @@ while (unique_loc < nrow(unique_pairs) + 1) {
 
 
 terrestrial_temps <- temperature_data[-1,]
-saveRDS(terrestrial_temps, "data-processed/temperature-data/terrestrial_tavg.rds")
+saveRDS(terrestrial_temps, "data-processed/temperature-data/terrestrial_tavg.rds") ### come back here!
 terrestrial_temps <- readRDS("data-processed/temperature-data/terrestrial_tavg.rds")
 
 ## adjust for elevation
