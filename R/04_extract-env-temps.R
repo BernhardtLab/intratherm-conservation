@@ -9,9 +9,10 @@ library(rerddap)
 acclitherm <- read.csv("data-processed/acclitherm.csv", stringsAsFactors = FALSE) %>%
   select(genus_species, realm_general, class)
 
-lpi_ol <- read.csv("data-processed/population-ts/lpi_acclitherm-spp.csv", stringsAsFactors = FALSE)
-gpdd_ol <- read.csv("data-processed/population-ts/gpdd_acclitherm-spp.csv", stringsAsFactors = FALSE) 
-biotime_ol <- read.csv("data-processed/population-ts/biotime-with-absences_acclitherm-spp.csv",  stringsAsFactors = FALSE) 
+### update with ' 2' data -- called 2 because of my icloud saving, it didn't write over the old files... oops
+lpi_ol <- read.csv("data-processed/population-ts/lpi_acclitherm-spp 2.csv", stringsAsFactors = FALSE)
+gpdd_ol <- read.csv("data-processed/population-ts/gpdd_acclitherm-spp 2.csv", stringsAsFactors = FALSE) 
+biotime_ol <- read.csv("data-processed/population-ts/biotime-with-absences_acclitherm-spp 2.csv",  stringsAsFactors = FALSE) 
 
 ## get locations of populations
 locs_lpi <- select(lpi_ol, popts_id, population_id, genus_species, Latitude, Longitude, System) %>% 
@@ -392,7 +393,9 @@ write.csv(terrestrial_temps, "data-processed/temperature-data/terrestrial_tavg_e
 ####################################
 ##      GETTING MARINE TEMPS      ##
 ####################################
-unique_pairs <- all_locs %>%
+library(rerddap)
+
+unique_pairs <- all_locs %>% ### now we have 288 species (we used to have 250 here)
   filter(realm_of_population == "Marine") %>%
   select(latitude, longitude, temp_id) %>%
   unique()
@@ -440,13 +443,17 @@ unique_pairs <- unique_pairs %>%
 ## create dataframe for temp data
 ## nValues for time attribute = 14096
 temperature_data <- data.frame(matrix(nrow = 14096))
+temperature_data <- data.frame(matrix(nrow = 365))
+# temperature_data <- data.frame(matrix(nrow = 3))
 
 ## loop through each population getting temp data for its grid cell and adding to temp data
 unique_loc <- 1
 while (unique_loc < nrow(unique_pairs) + 1) {
   print(paste("On population number", unique_loc))
   time_series <- griddap(info,
-                         time = c("1981-09-01", "2020-04-04"), 
+                         # time = c("1981-09-01T12:00:00Z", "1981-09-03T12:00:00Z"), 
+                         time = c("1981-09-01T12:00:00Z", "1982-09-01T12:00:00Z"), 
+                         # time = c("1981-09-01T12:00:00Z", "2023-12-02T12:00:00Z"), 
                          latitude = c(unique_pairs$grid_lat[unique_loc],unique_pairs$grid_lat[unique_loc]),
                          longitude = c(unique_pairs$grid_lon[unique_loc], unique_pairs$grid_lon[unique_loc]),
                          url = "https://upwell.pfeg.noaa.gov/erddap/")
@@ -470,7 +477,7 @@ while (unique_loc < nrow(unique_pairs) + 1) {
 
 ## save
 marine_temps <- temperature_data
-#saveRDS(marine_temps, "data-processed/temperature-data/marine_tavg.rds")
+saveRDS(marine_temps, "data-processed/temperature-data/marine_tavg.rds")
 marine_temps <- readRDS("data-processed/temperature-data/marine_tavg.rds")
 colnames(marine_temps)[1] = "date"
 
