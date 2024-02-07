@@ -35,4 +35,5 @@ populations-with-temps.csv
 population-time-series-with-temps.rds
 intratherm-freshwater-temp-data-daily_popdynam.csv
 intratherm-terrestrial-temps-tavg_popdynam.csv
+*.icloud
 
