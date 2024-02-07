@@ -54,36 +54,10 @@ unique_pairs <- unique_pairs %>%
 
 
 
-
-OISST_sub_dl <- function(time_df){
-  temps <- rerddap::griddap(datasetx = "ncdcOisst21Agg_LonPM180",
-                                url = "https://coastwatch.pfeg.noaa.gov/erddap/", 
-                                time = c(time_df$start, time_df$end), 
-                                zlev = c(0, 0),
-                                latitude = c(unique_pairs$grid_lat[unique_loc],unique_pairs$grid_lat[unique_loc]),
-                                longitude = c(unique_pairs$grid_lon[unique_loc], unique_pairs$grid_lon[unique_loc]),
-                                fields = "sst")$data %>% 
-    dplyr::mutate(time = base::as.Date(stringr::str_remove(time, "T12:00:00Z"))) %>% 
-    dplyr::rename(t = time, temp = sst, lon = longitude, lat = latitude) %>% 
-    dplyr::select(lon, lat, t, temp) %>% 
-    stats::na.omit()
-}
-
-
-
-# Download all of the data with one nested request
-# The time this takes will vary greatly based on connection speed
-
-test1 <- OISST_sub_dl(dl_years[1,])
-test2 <- OISST_sub_dl(dl_years[3,])
-
-
-
-
 ##### Now implement
 
 ## loop through each population getting temp data for its grid cell and adding to temp data
-
+### splittling into chunks of years because otherwise it seems it's too much for the server
 dl_years <- data.frame(date_index = 1:5,
                        start = c("1982-01-01", "1990-01-01", 
                                  "1998-01-01", "2006-01-01", "2014-01-01"),
