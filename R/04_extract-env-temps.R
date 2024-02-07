@@ -54,6 +54,7 @@ locs_gpdd <- locs_gpdd %>%
 ## make sure realms match
 all_locs <- rbind(locs_gpdd, locs_lpi, locs_biotime)
 
+
 realms <- all_locs %>%
   select(genus_species, population_id, realm_of_population, realm_general)
 
@@ -70,6 +71,8 @@ all_locs$sampled_in_other_realm <- ifelse(all_locs$population_id %in% no_match$p
 
 ## create temperature id = some pops will have the same temperature data so no use extracting twice
 all_locs$temp_id <- paste(all_locs$latitude, all_locs$longitude, sep = "_")
+
+write_csv(all_locs, "data-processed/all_locs.csv")
 
 #########################################################
 ##      GETTING ELEVATION FOR POPDYNAM POPULATIONS     ##
@@ -452,8 +455,8 @@ while (unique_loc < nrow(unique_pairs) + 1) {
   print(paste("On population number", unique_loc))
   time_series <- griddap(info,
                          # time = c("1981-09-01T12:00:00Z", "1981-09-03T12:00:00Z"), 
-                         time = c("1981-09-01T12:00:00Z", "1982-09-01T12:00:00Z"), 
-                         # time = c("1981-09-01T12:00:00Z", "2023-12-02T12:00:00Z"), 
+                         # time = c("1981-09-01T12:00:00Z", "1982-09-01T12:00:00Z"), 
+                          time = c("1981-09-01T12:00:00Z", "2023-12-02T12:00:00Z"), 
                          latitude = c(unique_pairs$grid_lat[unique_loc],unique_pairs$grid_lat[unique_loc]),
                          longitude = c(unique_pairs$grid_lon[unique_loc], unique_pairs$grid_lon[unique_loc]),
                          url = "https://upwell.pfeg.noaa.gov/erddap/")
