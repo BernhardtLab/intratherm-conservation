@@ -3,6 +3,84 @@ library(tidyverse)
 library(ncdf4)
 library(rerddap)
 
+
+
+# getting the locations ---------------------------------------------------
+
+##########################################################################################
+## getting temperature data for populations with known population dynamics to predict CTmax
+##########################################################################################
+acclitherm <- read.csv("data-processed/acclitherm.csv", stringsAsFactors = FALSE) %>%
+  select(genus_species, realm_general, class)
+
+### update with ' 2' data -- called 2 because of my icloud saving, it didn't write over the old files... oops
+lpi_ol <- read.csv("data-processed/population-ts/lpi_acclitherm-spp 2.csv", stringsAsFactors = FALSE)
+gpdd_ol <- read.csv("data-processed/population-ts/gpdd_acclitherm-spp 2.csv", stringsAsFactors = FALSE) 
+biotime_ol <- read.csv("data-processed/population-ts/biotime-with-absences_acclitherm-spp 2.csv",  stringsAsFactors = FALSE) 
+
+## get locations of populations
+locs_lpi <- select(lpi_ol, popts_id, population_id, genus_species, Latitude, Longitude, System) %>% 
+  rename("latitude" = Latitude, "longitude" = Longitude, "realm_of_population" = System) %>% unique()
+locs_gpdd <- select(gpdd_ol, popts_id, population_id, genus_species, LatDD, LongDD, Ocean) %>% unique()
+locs_gpdd$realm_of_population = ifelse(locs_gpdd$Ocean == "Not applicable",
+                                       "Terrestrial/Freshwater", 
+                                       "Marine") 
+locs_gpdd <- select(locs_gpdd, -Ocean) %>%
+  rename("latitude" = LatDD, "longitude" = LongDD)
+locs_biotime <- select(biotime_ol, popts_id, population_id, genus_species, LATITUDE, LONGITUDE, REALM) %>%
+  rename("latitude" = LATITUDE, "longitude" = LONGITUDE, "realm_of_population" = REALM) %>% unique()
+
+## figure out realm of populations 
+## check and make sure amphibians are always terrestrial 
+locs_lpi <- left_join(locs_lpi, acclitherm) %>%
+  filter(class == "Amphibia") %>%
+  mutate(realm_of_population = "Terrestrial") %>%
+  rbind(., filter(left_join(locs_lpi, acclitherm), class != "Amphibia"))
+
+locs_gpdd <- left_join(locs_gpdd, acclitherm) %>%
+  filter(class == "Amphibia") %>%
+  mutate(realm_of_population = "Terrestrial") %>%
+  rbind(., filter(left_join(locs_gpdd, acclitherm), class != "Amphibia"))
+
+locs_biotime <- left_join(locs_biotime, acclitherm) %>%
+  filter(class == "Amphibia") %>%
+  mutate(realm_of_population = "Terrestrial") %>%
+  rbind(., filter(left_join(locs_biotime, acclitherm), class != "Amphibia"))
+
+## make sure fish are freshwater in gpdd 
+locs_gpdd <- locs_gpdd %>%
+  filter(realm_of_population == "Terrestrial/Freshwater") %>%
+  mutate(realm_of_population = ifelse(class %in% c("Actinopteri", "Bivalvia"),
+                                      "Freshwater",
+                                      "Terrestrial")) %>%
+  rbind(., filter(locs_gpdd, realm_of_population != "Terrestrial/Freshwater"))
+
+## make sure realms match
+all_locs <- rbind(locs_gpdd, locs_lpi, locs_biotime)
+
+
+realms <- all_locs %>%
+  select(genus_species, population_id, realm_of_population, realm_general)
+
+no_match <- realms %>%
+  filter(realm_general != realm_of_population) %>%
+  select(genus_species, population_id) %>%
+  unique() %>%
+  left_join(., realms) %>% unique()
+## 435 don't match - mean population was sampled from different realm than acclimation response ratio/thermal limit
+## flag for now and decide what to do later (update 555 don't match)
+all_locs$sampled_in_other_realm <- ifelse(all_locs$population_id %in% no_match$population_id,
+                                          "Yes",
+                                          "No")
+
+## create temperature id = some pops will have the same temperature data so no use extracting twice
+all_locs$temp_id <- paste(all_locs$latitude, all_locs$longitude, sep = "_")
+
+write_csv(all_locs, "data-processed/all_locs.csv")
+
+
+
+
 all_locs <- read_csv("data-processed/all_locs.csv")
 
 unique_pairs <- all_locs %>% ### now we have 288 species (we used to have 250 here)
